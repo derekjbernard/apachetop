@@ -217,13 +217,15 @@ class ApacheStatusTool():
                           help="don't show output (default: False)", )
 
         parser.add_option("--mintime", dest="mintime", type="int",
-                          help="only show requests running longer than NUM sec", metavar="NUM")
+                          help="show requests running longer than NUM sec (SS value)",
+                          metavar="NUM")
 
-        parser.add_option("--reqcputime", dest="reqcputime", type="int",
-                          help="only show requests = NUM milliseconds", metavar="NUM")
+        parser.add_option("--maxreq", dest="maxreq", type="int",
+                          help="show requests <= NUM Milliseconds to process request",
+                          metavar="NUM")
 
-        parser.add_option("--connsize", dest="connsize", type="float",
-                          help="only show connections with >= NUM kilobytes transfered", metavar="NUM")
+        parser.add_option("--maxconnsize", dest="maxconnsize", type="float",
+                          help="only show connections <= NUM kilobytes transfered", metavar="NUM")
 
         state_choices = ['R', 'C', 'G', 'W', '_', 'K', 'D', 'L']
         parser.add_option("--state", dest="state", metavar="CHAR", choices=state_choices,
@@ -272,7 +274,7 @@ class ApacheStatusTool():
             status = proc[3]
             url = proc[12]
             secs = proc[5]
-            reqs = int(proc[6])
+            req = int(proc[6])
             conn = proc[7]
             pid = proc[1]
 
@@ -286,18 +288,17 @@ class ApacheStatusTool():
             if self.options.state and self.options.state != status:
                 continue
 
-            if self.options.reqcputime and self.options.reqcputime <= reqs:
-                filtered.append(proc)
-            
-            if self.options.mintime < secs:
-                filtered.append(proc)
-            """
-            if self.options.reqcputime and self.options.reqcputime <= reqs:
-                filtered.append(proc)
-            
-            if self.options.connsize and self.options.connsize >= conn:
-                filtered.append(proc)
-            """
+            if self.options.maxreq is not None and not self.options.maxreq >= req:
+                continue
+
+            if self.options.mintime is not None and not self.options.mintime < secs:
+                continue
+
+            if self.options.maxconnsize is not None and not self.options.maxconnsize >= conn:
+                continue
+
+            filtered.append(proc)
+
         return filtered
 
     def parse_live_status(self, url):

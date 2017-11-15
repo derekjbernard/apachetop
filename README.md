@@ -27,7 +27,7 @@
     
         apachetop --state G --mintime 120 --kill
     
-    Kill all connections occupied by Chinese with crappy bandwidth.
+    Kill all connections with connectivity issues.
     
         apachetop --state R  --mintime 10 --kill
     
